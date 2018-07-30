@@ -12,7 +12,7 @@
 export default {
     name: 'AnotherComponent',
     props: {
-    msg: String,
+        msg: String,
     },
     data: function(){
         return {
