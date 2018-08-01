@@ -18,7 +18,7 @@ export default {
     },
     methods: {
         addNewTitle: function(){
-            this.title = "changing from the button";
+            
         }
     }
 
@@ -26,8 +26,5 @@ export default {
 </script>
 
 <style scoped>
-h1 {
-    color:darkred;
-}
 
 </style>
