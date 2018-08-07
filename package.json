@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start": "node server.js",
+    "postinstall": "if test \"$NODE_ENV\" = \"production\" ; then npm run build ; fi ",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
@@ -19,6 +21,8 @@
     "@vue/cli-plugin-eslint": "^3.0.0-rc.6",
     "@vue/cli-service": "^3.0.0-rc.6",
     "@vue/eslint-config-airbnb": "^3.0.0-rc.6",
+    "express": "^4.16.3",
+    "serve-static": "^1.13.2",
     "vue-template-compiler": "^2.5.16"
   },
   "eslintConfig": {
