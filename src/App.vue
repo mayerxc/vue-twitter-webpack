@@ -17,7 +17,8 @@
               </md-field>
             </md-toolbar>
           </div>
-          <md-checkbox v-model="searchLocation">Search by Location</md-checkbox>
+          <md-checkbox v-model="searchLocation" v-on:change="getLocation()">Search by Location</md-checkbox>
+          <md-content v-if="searchLocation">{{`${city}, ${region}`}}</md-content>
           <div class="md-layout md-alignment-top-center">
             <md-content class="md-layout-item md-size-10 md-small-size-40 md-xsmall-size-90">
               <md-field >
@@ -66,6 +67,8 @@
               </md-toolbar>
             </div>
 
+            
+
             <md-content class="md-layout md-alignment-top-center md-size-60">
               <div class="md-layout md-alignment-top-center" v-if="showUsers">
                 <div class="md-layout-item" v-for="user in userArr">
@@ -105,6 +108,7 @@ import HelloWorld from './components/HelloWorld.vue';
 import Vue from 'vue'
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.min.css'
+// import func from './vue-temp/vue-editor-bridge';
 
 Vue.use(VueMaterial)
 
@@ -121,6 +125,11 @@ export default {
       search: "",
       searchUser: "",
       tweetSearchNumber: 5,
+      lat: 45.52345,
+      lon: -122.67621,
+      city: null,
+      region:null,
+      radius: 20,
       showTweets: false,
       showUsers: false,
       showSpinner: false,
@@ -133,17 +142,51 @@ export default {
   methods: {
     getTweets: function() {
       let self = this;
+      
+      //get spinner going
       self.showSpinner = true;
+
+      //clear old tweets
       self.showTweets = false;
       self.tweetArr = [];
-      let url = `https://twitter-backend.herokuapp.com/query?search=${this.search}`;
-      // let url = `http://localhost:3000/query?search=${this.search}`
-      axios.get(url).then(function(response){
-        console.log(response);
-        self.showSpinner = false;
-        self.tweetArr = response.data.statuses
-        self.showTweets = true;
-      })
+      
+      //set URL
+      let url = `https://twitter-backend.herokuapp.com/query`;
+      
+      function runAxios(url, params){
+        axios.get(url, params).then(function(response){
+          console.log(response);
+        
+          //stop spinner
+          self.showSpinner = false;
+          
+          //load and show tweets
+          self.tweetArr = response.data.statuses
+          self.showTweets = true;
+        }).catch(function(error){
+          console.log(error);
+        })
+      }
+      
+      //set up params
+      let params = {};
+      if (self.searchLocation === true){
+        console.log("searchLocation true?", self.searchLocation);
+        params = {
+          "params": {
+            "search": self.search,
+            "geocode": `${self.lat},${self.lon},${self.radius}mi`
+          }
+        }
+        runAxios(url, params);
+      
+      } else {
+        params = {"params": {"search": self.search } }
+        runAxios(url, params);
+      }
+      console.log("params are:", params)
+      
+      
     },
 
     getUsers: function () {
@@ -153,12 +196,39 @@ export default {
       self.showUsers = false;
       let url = `https://twitter-backend.herokuapp.com/user?user=${this.searchUser}`;
       // let url = `http://localhost:3000/user?user=${this.searchUser}`;
-      axios.get(url).then( function(response) {
-        console.log(response);
-        self.showSpinner = false;
-        self.userArr = response.data
-        self.showUsers = true;
-      })
+      axios.get(url)
+        .then( function(response) {
+          console.log(response);
+          self.showSpinner = false;
+          self.userArr = response.data
+          self.showUsers = true;
+        })
+        .catch((error) => {
+          console.log("Error in searching for twitter user");
+          console.log(error);
+        })
+    },
+
+    getLocation: function(){
+      let self = this;
+      let url = `http://ip-api.com/json`
+      axios.get(url)
+        .then(function(response){
+          console.log("response from ip-api:", response)
+          self.lat = response.data.lat;
+          self.lon = response.data.lon;
+          self.city = response.data.city;
+          self.region = response.data.region;
+          console.log("lat:", self.lat);
+          console.log("lon:", self.lon);
+
+          let data = response.data;
+          console.log("data from ip-api", data);
+          // return data;
+        })
+        .catch(function(error) {
+          console.log("error from ip api", error);
+        })
     }
   }
 } 
