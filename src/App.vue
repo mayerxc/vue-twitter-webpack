@@ -27,6 +27,7 @@
               </md-field>
             </md-content>
           </div>
+
           <div class="md-layout md-alignment-top-center">
             <md-card class="md-layout-item md-size-70 md-small-size-95 md-xsmall-size-100">
               <md-content>
@@ -56,7 +57,7 @@
           <div>
             <h1 class="md-title">Search Users</h1>
             <div class="md-layout md-alignment-top-center">
-              <md-toolbar class="md-layout-item md-size-60 md-small-size-75 md-xsmall-size-100 md-layout md-alignment-top-center">
+              <md-toolbar class="md-layout-item md-size-70 md-small-size-95 md-xsmall-size-100 md-layout md-alignment-top-center">
                 <md-field>
                   <label>Search Twitter Users</label>
                   <md-input v-on:keyup.enter="getUsers()" v-model="searchUser" type="text"></md-input>
@@ -67,33 +68,45 @@
               </md-toolbar>
             </div>
 
-            
+            <div class="md-layout md-alignment-top-center">
+              <md-content class="md-layout-item md-size-10 md-small-size-40 md-xsmall-size-90">
+                <md-field >
+                  <label>Number of Users</label>
+                  <md-input v-model="tweetUserNumber" type="number">{{tweetUserNumber}}</md-input>
+                </md-field>
+              </md-content>
+            </div>
 
-            <md-content class="md-layout md-alignment-top-center md-size-60">
-              <div class="md-layout md-alignment-top-center" v-if="showUsers">
-                <div class="md-layout-item" v-for="user in userArr">
-                  <timeline 
-                    :id="user.screen_name" 
-                    :sourceType="'profile'" 
-                    :options="{ tweetLimit: '3', width: '255', align: 'center' }" 
-                    error-message="This user could not be loaded" 
-                    error-message-class="user--not-found" 
+            <div class="md-layout md-alignment-top-center">
+              <md-card class="md-layout-item md-size-70 md-small-size-95 md-xsmall-size-100">
+                <md-content>
+                  <md-progress-spinner 
+                    v-if="showSpinnerUser"
+                    :md-diameter="100" 
+                    :md-stroke="10" 
+                    md-mode="indeterminate"
                   >
-                    <md-progress-spinner :md-diameter="100" :md-stroke="10" md-mode="indeterminate"></md-progress-spinner>
-                  </timeline>
-                </div>
-              </div>
-            </md-content>
+                  </md-progress-spinner>
+                  <div class="md-layout md-alignment-top-center" v-if="showUsers">
+                    <div class="md-layout-item" v-for="user in userArr">
+                      <timeline 
+                        :id="user.screen_name" 
+                        :sourceType="'profile'" 
+                        :options="{ tweetLimit: '3', width: '255', align: 'center' }" 
+                        error-message="This user could not be loaded" 
+                        error-message-class="user--not-found" 
+                      >
+                        <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
+                      </timeline>
+                    </div>
+                  </div>
+                </md-content>
+              </md-card>
+            </div>
           </div>
         </md-tab>
       </md-tabs>
-      
-        
     </div>
-    
-    <!-- style="display:flex; flex-direction: row; align-items:flex-start; justify-content:space-around;flex-wrap:wrap;" -->
-    
-    
   </div>
 </template>
 
@@ -124,7 +137,8 @@ export default {
     return {
       search: "",
       searchUser: "",
-      tweetSearchNumber: 5,
+      tweetSearchNumber: 10,
+      tweetUserNumber: 5,
       lat: 45.52345,
       lon: -122.67621,
       city: null,
@@ -133,6 +147,7 @@ export default {
       showTweets: false,
       showUsers: false,
       showSpinner: false,
+      showSpinnerUser: false,
       searchLocation: false,
       tweetArr: [],
       userArr: [],
@@ -175,13 +190,14 @@ export default {
         params = {
           "params": {
             "search": self.search,
-            "geocode": `${self.lat},${self.lon},${self.radius}mi`
+            "geocode": `${self.lat},${self.lon},${self.radius}mi`,
+            "count": self.tweetSearchNumber
           }
         }
         runAxios(url, params);
       
       } else {
-        params = {"params": {"search": self.search } }
+        params = {"params": {"search": self.search, "count":self.tweetSearchNumber } }
         runAxios(url, params);
       }
       console.log("params are:", params)
@@ -191,15 +207,15 @@ export default {
 
     getUsers: function () {
       let self = this;
-      self.showSpinner = true;
+      self.showSpinnerUser = true;
       self.userArr = [];
       self.showUsers = false;
-      let url = `https://twitter-backend.herokuapp.com/user?user=${this.searchUser}`;
+      let url = `https://twitter-backend.herokuapp.com/user?user=${self.searchUser}&count=${self.tweetUserNumber}`;
       // let url = `http://localhost:3000/user?user=${this.searchUser}`;
       axios.get(url)
         .then( function(response) {
           console.log(response);
-          self.showSpinner = false;
+          self.showSpinnerUser = false;
           self.userArr = response.data
           self.showUsers = true;
         })
@@ -224,7 +240,6 @@ export default {
 
           let data = response.data;
           console.log("data from ip-api", data);
-          // return data;
         })
         .catch(function(error) {
           console.log("error from ip api", error);
@@ -244,7 +259,6 @@ export default {
   margin-top: 5px;
 }
 Tweet {
-  /* display: block; */
   float:right;
   margin-left: auto;
   margin-right: auto;
@@ -252,15 +266,6 @@ Tweet {
   text-align: center;
 }
 
-
-
-/* .md-content {
-  width: 300px;
-  height: 200px;
-  display: inline-flex;
-  justify-content: space-around;
-  align-items: flex-start;
-  } */
 
 
 </style>
