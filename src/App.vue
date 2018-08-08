@@ -227,12 +227,12 @@ export default {
 
     getLocation: function(){
       let self = this;
-      let url = `http://ip-api.com/json`
+      let url = `https://ipapi.co/json/`
       axios.get(url)
         .then(function(response){
           console.log("response from ip-api:", response)
-          self.lat = response.data.lat;
-          self.lon = response.data.lon;
+          self.lat = response.data.latitude;
+          self.lon = response.data.longitude;
           self.city = response.data.city;
           self.region = response.data.region;
           console.log("lat:", self.lat);
